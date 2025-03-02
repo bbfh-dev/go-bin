@@ -66,3 +66,20 @@ func (writer *Writer) WriteString(str string) *Writer {
 	_, err := writer.buffer.Write(append([]byte(str), '\x00'))
 	return writer.saveErr(err)
 }
+
+type Writable interface {
+	Bytes() []byte
+}
+
+func (writer *Writer) WriteFixedSlice(values []Writable) *Writer {
+	writer.WriteUint64(uint64(len(values)))
+	switch len(values) {
+	case 0:
+		return writer
+	case 1:
+		item := values[0].Bytes()
+		writer.WriteUint64(uint64(len(item)))
+		writer.Write(item...)
+	}
+	return writer
+}

@@ -55,3 +55,26 @@ func TestReaderPointer(test *testing.T) {
 
 	assert.DeepEqual(test, buffer.Bytes(), []byte{})
 }
+
+func TestReplayStringWindows1252(test *testing.T) {
+	var buffer bytes.Buffer
+	err := bin.NewWriter(&buffer).WriteUint32(7).WriteString("abcdef").Error()
+	assert.NilError(test, err)
+
+	var str string
+	assert.NilError(test, bin.NewReader(&buffer).ReadReplayString(&str).Error())
+
+	assert.DeepEqual(test, str, "abcdef")
+}
+
+func TestReplayStringUTF16(test *testing.T) {
+	var buffer bytes.Buffer
+	value := -7
+	err := bin.NewWriter(&buffer).WriteUint32(uint32(value)).WriteString("абвгде").Error()
+	assert.NilError(test, err)
+
+	var str string
+	assert.NilError(test, bin.NewReader(&buffer).ReadReplayString(&str).Error())
+
+	assert.DeepEqual(test, str, "абвгде")
+}
